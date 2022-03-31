@@ -8,7 +8,7 @@ import java.io.File
 object SparkCT {
 
   val spark = SparkSession.builder()
-    .appName("Spark Merge File")
+    .appName("SparkMerge")
     .getOrCreate()
   def initConfigHadoop():Unit={
     spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://nameservice1")

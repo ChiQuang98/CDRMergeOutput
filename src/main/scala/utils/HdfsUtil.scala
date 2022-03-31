@@ -1,20 +1,21 @@
 package utils
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path}
+
 import java.io.IOException
 import java.util
 
 object HdfsUtil {
-   def getListFolderInHdfs(conf: Configuration, hdfsPath: String): util.ArrayList[String] = {
+  def getListFolderInHdfs(conf: Configuration, hdfsPath: String): util.ArrayList[String] = {
     val listFile = new util.ArrayList[String]
     try {
       val fs = FileSystem.get(conf)
       val folders = fs.listStatus(new Path(hdfsPath))
-      folders.sortBy(folders=>folders.getModificationTime)
-      for (w <-0 to folders.size-1) {
-//        val fileStatus = fileStatusListIterator.next.asInstanceOf[LocatedFileStatus]
-        if(folders(w).isDirectory){
+      folders.sortBy(folders => folders.getModificationTime)
+      for (w <- 0 to folders.size - 1) {
+        //        val fileStatus = fileStatusListIterator.next.asInstanceOf[LocatedFileStatus]
+        if (folders(w).isDirectory) {
           listFile.add(folders(w).getPath.toString)
         }
       }
@@ -24,20 +25,38 @@ object HdfsUtil {
     }
     listFile
   }
-  def getLastestFileInHdfs(conf: Configuration, hdfsPath: String):String={
-    val fs = FileSystem.get(conf)
-    val folders = fs.listStatus(new Path(hdfsPath))
-    folders.sortBy(folders=>folders.getModificationTime)
-    val last_modified_File = folders.last.getPath.toString
-    last_modified_File
+
+  def getLastestFolderInHdfs(conf: Configuration, hdfsPath: String): String = {
+    try {
+      val fs = FileSystem.get(conf)
+      val folders = fs.listStatus(new Path(hdfsPath))
+      var timeInit = 0L
+      var pathLastestFolder = ""
+      for (i <- 0 until folders.length) {
+        if (folders(i).isDirectory) {
+          if (folders(i).getModificationTime > timeInit) {
+            timeInit = folders(i).getModificationTime
+            pathLastestFolder = folders(i).getPath.toString
+          }
+        }
+      }
+      pathLastestFolder
+    }
+    catch {
+      case e: Exception =>
+        e.printStackTrace()
+        e.getMessage.toString
+      //            logger.error("Hdfs Get File error: ", e);
+    }
   }
-   def initConfig: Configuration = {
+
+  def initConfig: Configuration = {
     val conf = new Configuration
     try { //            PropertiesConfiguration config = AppConfig.getMHTTPropertiesConfiguration();
       val IS_WINDOWS = System.getProperty("os.name").contains("indow")
       if (IS_WINDOWS) System.setProperty("hadoop.home.dir", "E:\\hadoopwin")
-//      System.setProperty("java.security.krb5.conf", "E:\\Project\\CDR\\krb5.conf")
-//      System.setProperty("sun.security.krb5.debug", "true")
+      //      System.setProperty("java.security.krb5.conf", "E:\\Project\\CDR\\krb5.conf")
+      //      System.setProperty("sun.security.krb5.debug", "true")
       conf.set("fs.defaultFS", "hdfs://nameservice1")
       conf.set("fs.default.name", "hdfs://nameservice1")
       conf.set("dfs.nameservices", "nameservice1")

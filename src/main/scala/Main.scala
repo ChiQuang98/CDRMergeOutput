@@ -1,5 +1,5 @@
 import org.apache.log4j.{Level, Logger}
-import utils.HdfsUtil.{getListFolderInHdfs, initConfig}
+import utils.HdfsUtil.{deleteFileInHdfs, getLastestFolderInHdfs, getListFolderInHdfs, initConfig}
 import spark.SparkCT
 object Main {
   def main(args: Array[String]): Unit = {
@@ -10,12 +10,10 @@ object Main {
     val arr = getListFolderInHdfs(conf, "/user/ttcntt_icrs/CDR_Project/TempOutput/")
     if (arr.size() < 1) {
       //    if(!true){
-      println("QUang1")
-      println("Chua co file temp de merge to xlsx")
+      println("Chua co folder temp de merge thanh file xlsx")
       System.exit(0)
     } else {
-
-      val pathFileMerge = arr.get(0)
+      val pathFileMerge = getLastestFolderInHdfs(conf,"/user/ttcntt_icrs/CDR_Project/TempOutput/")
       val temp = pathFileMerge.split("/")
       var nameFile = temp(temp.size - 1)
       println(pathFileMerge,nameFile,"QUANG")
@@ -25,10 +23,8 @@ object Main {
         .option("header", "true")
         .mode("overwrite") // Optional, default: overwrite.
         .save("/user/ttcntt_icrs/CDR_Project/etl_output/"+nameFile)
-
       spark.stop()
-
+      deleteFileInHdfs(conf,pathFileMerge)
     }
   }
-
 }
