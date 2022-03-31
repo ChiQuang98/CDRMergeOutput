@@ -24,6 +24,7 @@ object Main {
         .mode("overwrite") // Optional, default: overwrite.
         .save("/user/ttcntt_icrs/CDR_Project/etl_output/"+nameFile)
       spark.stop()
+      //Xoa file temp parquet sau khi merge xong
       deleteFileInHdfs(conf,pathFileMerge)
     }
   }
